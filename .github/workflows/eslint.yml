@@ -1,0 +1,52 @@
+name: Eslint
+
+# on: [push]
+on: 
+  push:
+    branches:
+      - master
+      
+jobs:
+    esLint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: "16"
+                cache: "npm"
+            # - name: Create annotation for build error  
+            #   run: echo "::error file=app.js,line=1::Missing semicolon"
+            - name: Install dependenies
+              run: npm install
+            # - name: npm run lint
+            #   run: npm run lint
+            - name: Run eslint and log reports
+              id: log-eslint-report
+              run: |
+                npm run lint:ci --silent || true
+                reports=$(cat ./reports.txt) 
+                if [ "$reports" == "" ]
+                then
+                    echo '✅ All Passed'
+                    echo "results=✅ All Passed" >> "$GITHUB_OUTPUT"
+                else
+                    echo '😡😡😡😡😡 Error occurred....' 
+                    echo "results=😡😡😡😡😡 Error occurred...." >> "$GITHUB_OUTPUT"
+                fi
+            - name: Print reports
+              run: |
+                echo ${{ steps.log-eslint-report.outputs.results}}
+                echo reports2=$(cat ./reports.txt) 
+                echo $reports2
+            # - name: Simulate a failure
+            #   id: simulate_failure
+            #   run: exit 1  # Simulate a failure
+            #   continue-on-error: true  # Continue to the next step even if this step fails
+            # - name: Check simulate outcome
+            #   run: |
+            #     echo simulate_failure: ${{ steps.simulate_failure.outcome }}
+
+
