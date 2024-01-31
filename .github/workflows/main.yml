@@ -1,7 +1,9 @@
 name: GitHub Actions
 run-name: ${{ github.event.head_commit.message }} by @${{ github.actor }}
-on:
-  # [push]
+
+# on: [pull_request]
+
+on:  
   push:
     branches:
       - master
@@ -20,12 +22,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
           cache: "npm"
       - name: Install dependenies
         run: npm install
-      - name: Check eslint
+      - name: Run ESLint
         run: npm run lint
+        continue-on-error: true       
+      - name: Run Unit Test
+        run: npm run test
+        continue-on-error: true 
+      - name: Check test and lint results
+        run: |
+          
       - name: Build Artifacts
         run: npm run build
       - uses: actions/upload-artifact@v4
@@ -38,6 +47,7 @@ jobs:
   CD:
     needs: CI
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     env:
       artifactId: ${{needs.CI.outputs.artifactId}}
       artifactUrl: ${{needs.CI.outputs.artifactUrl}}

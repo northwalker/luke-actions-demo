@@ -1,9 +1,12 @@
 name: Build and Deploy
 
 # on: [pull_request]
+# on: 
+#   push:
+#     branches: ["feature/github-actions"]
 on: 
   push:
-    branches: ["feature/github-actions"]
+    branches: ["master"]
 
 permissions:
   contents: read
@@ -33,6 +36,7 @@ jobs:
             path: './dist'
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}    
