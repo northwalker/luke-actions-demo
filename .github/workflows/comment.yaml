@@ -5,7 +5,7 @@ name: Comment Pull Request
 on: 
   push: 
     branches: master
-
+  
 jobs:
   update_pull_request:
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
           script: |
             const { data: pullRequest } = await github.rest.pulls.get({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo: context.  .repo,
               pull_number: context.issue.number,
             });
             console.log('pullRequest', pullRequest.body);

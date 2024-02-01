@@ -1,0 +1,59 @@
+name: GitHub Actions
+run-name: ${{ github.event.head_commit.message }} by @${{ github.actor }}
+
+# on: [pull_request]
+on:  
+  push:
+    branches:
+      - master
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    outputs:
+      artifactId: ${{ steps.artifact-upload-step.outputs.artifact-id }}
+      artifactUrl: ${{ steps.artifact-upload-step.outputs.artifact-url }}
+    steps:
+      - name: Hello 
+        run: echo "Hello ${{ github.repository }} repository"
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependenies
+        run: npm install
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true       
+      - name: Run Unit Test
+        run: npm run test
+        continue-on-error: true 
+      - name: Check test and lint results
+        run: |
+          
+      - name: Build Artifacts
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: dist
+          path: dist/
+      - name: Set summary
+        run:  echo "GitHub Actions workflows CI has done. 🚀" >> $GITHUB_STEP_SUMMARY 
+  CD:
+    needs: CI
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    env:
+      artifactId: ${{needs.CI.outputs.artifactId}}
+      artifactUrl: ${{needs.CI.outputs.artifactUrl}}
+    steps: 
+      - name: Log Artifact ID  
+        run: echo "Artifact ID from previous job is $artifactId" >> $GITHUB_STEP_SUMMARY
+      - name: Log Artifact URL
+        run: echo "Artifact URL from previous job is $artifactUrl" >> $GITHUB_STEP_SUMMARY 
+      - name: Deploy
+        run: echo "Run some scripts to deploy artifact"

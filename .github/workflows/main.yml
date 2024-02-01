@@ -1,15 +1,117 @@
 name: GitHub Actions
-run-name: ${{ github.event.head_commit.message }} by @${{ github.actor }}
+run-name: GitHub Actions by @${{ github.actor }}
 
-# on: [pull_request]
+on: [pull_request]
 
-on:  
-  push:
-    branches:
-      - master
+# on:  
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  CI:
+jobs:  
+  Initial:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        id: update_label
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+        with:
+          script: |
+            const isFeature = process.env?.BRANCH_NAME.toLowerCase().startsWith('feat')
+            const isBug = process.env?.BRANCH_NAME.toLowerCase().startsWith('fix')
+            let labels = [];
+            if (isFeature) labels.push('enhancement');
+            if (isBug) labels.push('bug');
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels
+            })
+            return  process.env?.BRANCH_NAME
+          result-encoding: string
+      - name: Result from github-script
+        run: echo 'Pull Request id ${{steps.update_label.outputs.result}}' 
+  ESLint:
+    needs: Initial
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "20"
+            cache: "npm"
+        - name: Install dependenies
+          run: npm install
+        - name: Run ESLint
+          id: lint_and_report
+          continue-on-error: true
+          run: | 
+            npm run lint:ci --silent > ./lint_reports.txt
+        - name: Log reports and check outcome
+          id: build_lint_reports
+          run: |  
+            echo outcome: ${{ steps.lint_and_report.outcome }}
+            if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+              echo '✅ Lint All Passed' > ./lint_reports.txt
+            else
+              echo '😡😡😡😡😡 Lint Error...' >> ./lint_reports.txt
+            fi
+        - name: Save ESLint result
+          uses: actions/upload-artifact@v4
+          id: artifact-upload-step
+          with:
+            name: lint_reports
+            path: ./lint_reports.txt
+        - name: Log reports and check outcome
+          run: |  
+            echo outcome: ${{ steps.lint_and_report.outcome }}
+            if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+              exit 0
+            else
+              exit 1
+            fi        
+  UnitTest:
+    needs: Initial
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependenies
+        run: npm install
+      - name: Run Test
+        id: test_and_report
+        # Grep 4 rows after "Test Files", that's final info
+        run:  |
+          npm run test:ci --silent | grep -A 4 "Test Files" | sed -E "s/\x1B\[[0-9;]*[JKmsu]//g" > ./test_reports.txt
+        continue-on-error: true
+      - name: Save Test result
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: test_reports
+          path: ./test_reports.txt          
+      - name: Log reports and check outcome
+        run: |
+          echo outcome: ${{ steps.test_and_report.outcome }}
+          if [[ "${{ steps.test_and_report.outcome }}" == 'success' ]]; then
+            exit 0
+          else
+            exit 1
+          fi
+  Build:
+    needs: ['ESLint', 'UnitTest']
     runs-on: ubuntu-latest
     outputs:
       artifactId: ${{ steps.artifact-upload-step.outputs.artifact-id }}
@@ -26,15 +128,6 @@ jobs:
           cache: "npm"
       - name: Install dependenies
         run: npm install
-      - name: Run ESLint
-        run: npm run lint
-        continue-on-error: true       
-      - name: Run Unit Test
-        run: npm run test
-        continue-on-error: true 
-      - name: Check test and lint results
-        run: |
-          
       - name: Build Artifacts
         run: npm run build
       - uses: actions/upload-artifact@v4
@@ -44,13 +137,13 @@ jobs:
           path: dist/
       - name: Set summary
         run:  echo "GitHub Actions workflows CI has done. 🚀" >> $GITHUB_STEP_SUMMARY 
-  CD:
-    needs: CI
+  Deploy:
+    needs: Build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     env:
-      artifactId: ${{needs.CI.outputs.artifactId}}
-      artifactUrl: ${{needs.CI.outputs.artifactUrl}}
+      artifactId: ${{needs.build.outputs.artifactId}}
+      artifactUrl: ${{needs.build.outputs.artifactUrl}}
     steps: 
       - name: Log Artifact ID  
         run: echo "Artifact ID from previous job is $artifactId" >> $GITHUB_STEP_SUMMARY
@@ -58,3 +151,80 @@ jobs:
         run: echo "Artifact URL from previous job is $artifactUrl" >> $GITHUB_STEP_SUMMARY 
       - name: Deploy
         run: echo "Run some scripts to deploy artifact"
+  report:
+    needs: ['ESLint', 'UnitTest']
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    if: ${{ always() }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        name: Download All Artifacts
+        with: 
+          path: download
+      # - name: List download files
+      #   id: download-reports
+      #   run: |
+      #     # ls -R download
+      # - name: View context attributes
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: console.log(context)
+      - uses: actions/github-script@v7
+        id: update_pull_request_comment
+        with:
+          script: |
+            const fs = require('fs');
+            const lintReportsFilePath = 'download/lint_reports/lint_reports.txt';
+            const testReportsFilePath = 'download/test_reports/test_reports.txt';
+            const lintReportsFile = fs.readFileSync(lintReportsFilePath, 'utf8');
+            const testReportsFile = fs.readFileSync(testReportsFilePath, 'utf8');
+
+            console.log('lint File content:', lintReportsFile);
+            console.log('test File content:', testReportsFile);
+
+            const now = new Date().toLocaleString('zh', { timeZone: 'Asia/Taipei' });
+            const commentContent = `Created from Github Actions 👋  ${now} \n \`\`\`\n${lintReportsFile}\`\`\` \n \`\`\`\n${testReportsFile}\`\`\` `
+
+            const { data: list_comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            // comment.user.login === 'github-actions[bot]'
+            const bot_comment = list_comments.find(c => c.user.type === 'Bot' && c.user.id == 41898282 );
+
+            // const data = await github.rest.issues.updateComment({
+            //   owner: context.repo.owner,
+            //   repo: context.repo.repo,
+            //   comment_id: bot_comment.id,
+            //   body: commentContent
+            // });
+            // console.log('updateComment data', data);
+            
+            github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: bot_comment.id
+            });
+            console.log('Delete comment id', bot_comment.id);
+            
+            const { data } = await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentContent
+            })
+            console.log('Create comment id', data.id);
+
+            return data.id;
+          result-encoding: string
+      - name: Log pull request comment id
+        run: echo 'New created comment id ${{steps.update_pull_request_comment.outputs.result}}'
+              
