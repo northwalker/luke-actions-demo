@@ -2,6 +2,7 @@ name: Explore GitHub Actions
 run-name: Explore GitHub Actions
 
 # on: push
+
 on:
   push:
     branches:

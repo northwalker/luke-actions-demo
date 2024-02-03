@@ -21,11 +21,17 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         with:
           script: |
-            const isFeature = process.env?.BRANCH_NAME.toLowerCase().startsWith('feat')
-            const isBug = process.env?.BRANCH_NAME.toLowerCase().startsWith('fix')
+            const isFeature = process.env?.BRANCH_NAME.toLowerCase().startsWith('feature') || process.env?.BRANCH_NAME.toLowerCase().startsWith('feat');
+            const isBug = process.env?.BRANCH_NAME.toLowerCase().startsWith('fix');
+            const isHotfix = process.env?.BRANCH_NAME.toLowerCase().startsWith('hotfix');
+            const isRelease = process.env?.BRANCH_NAME.toLowerCase().startsWith('release');
+
             let labels = [];
             if (isFeature) labels.push('enhancement');
             if (isBug) labels.push('bug');
+            if (isHotfix) labels.push('hotfix');
+            if (isRelease) labels.push('release');
+
             github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -52,8 +58,7 @@ jobs:
         - name: Run ESLint
           id: lint_and_report
           continue-on-error: true
-          run: | 
-            npm run lint:ci --silent > ./lint_reports.txt
+          run: npm run lint:ci --silent > ./lint_reports.txt
         - name: Log reports and check outcome
           id: build_lint_reports
           run: |  
@@ -93,8 +98,10 @@ jobs:
       - name: Run Test
         id: test_and_report
         # Grep 4 rows after "Test Files", that's final info
-        run:  |
-          npm run test:ci --silent | grep -A 4 "Test Files" | sed -E "s/\x1B\[[0-9;]*[JKmsu]//g" > ./test_reports.txt
+        run: |
+          npm run test:ci --silent | grep -A 100 "Test Files" | sed -E "s/\x1B\[[0-9;]*[JKmsu]//g" > ./test_reports.txt
+          npmExitCode=${PIPESTATUS[0]}
+          echo "npmExitCode=$npmExitCode" >> "$GITHUB_ENV"
         continue-on-error: true
       - name: Save Test result
         uses: actions/upload-artifact@v4
@@ -104,11 +111,12 @@ jobs:
           path: ./test_reports.txt          
       - name: Log reports and check outcome
         run: |
+          echo npmExitCode: $npmExitCode
           echo outcome: ${{ steps.test_and_report.outcome }}
-          if [[ "${{ steps.test_and_report.outcome }}" == 'success' ]]; then
-            exit 0
-          else
+          if [[ "${{ steps.test_and_report.outcome }}" == 'failure'  || $npmExitCode == 1 ]]; then
             exit 1
+          else
+            exit 0
           fi
   Build:
     needs: ['ESLint', 'UnitTest']
@@ -136,7 +144,7 @@ jobs:
           name: dist
           path: dist/
       - name: Set summary
-        run:  echo "GitHub Actions workflows CI has done. 🚀" >> $GITHUB_STEP_SUMMARY 
+        run:  echo "GitHub Actions workflows has done. 🚀" >> $GITHUB_STEP_SUMMARY 
   Deploy:
     needs: Build
     runs-on: ubuntu-latest

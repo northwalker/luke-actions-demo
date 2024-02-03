@@ -1,4 +1,0 @@
- Test Files  1 failed (1)
-      Tests  1 failed | 8 passed (9)
-   Start at  23:30:07
-   Duration  103ms (transform 11ms, setup 0ms, collect 6ms, tests 5ms, environment 0ms, prepare 27ms)
