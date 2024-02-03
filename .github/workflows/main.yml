@@ -97,11 +97,9 @@ jobs:
         run: npm install
       - name: Run Test
         id: test_and_report
-        # Grep 4 rows after "Test Files", that's final info
+        # Grep 4 rows after "Test Suites", that's final info
         run: |
-          npm run test:ci --silent | grep -A 100 "Test Files" | sed -E "s/\x1B\[[0-9;]*[JKmsu]//g" > ./test_reports.txt
-          npmExitCode=${PIPESTATUS[0]}
-          echo "npmExitCode=$npmExitCode" >> "$GITHUB_ENV"
+          npm run test:ci --silent > ./test_reports.txt 2>> ./test_reports.txt
         continue-on-error: true
       - name: Save Test result
         uses: actions/upload-artifact@v4
@@ -111,9 +109,8 @@ jobs:
           path: ./test_reports.txt          
       - name: Log reports and check outcome
         run: |
-          echo npmExitCode: $npmExitCode
           echo outcome: ${{ steps.test_and_report.outcome }}
-          if [[ "${{ steps.test_and_report.outcome }}" == 'failure'  || $npmExitCode == 1 ]]; then
+          if [[ "${{ steps.test_and_report.outcome }}" == 'failure' ]]; then
             exit 1
           else
             exit 0
@@ -193,8 +190,8 @@ jobs:
             const lintReportsFile = fs.readFileSync(lintReportsFilePath, 'utf8');
             const testReportsFile = fs.readFileSync(testReportsFilePath, 'utf8');
 
-            console.log('lint File content:', lintReportsFile);
-            console.log('test File content:', testReportsFile);
+            console.log('lint File content:\n', lintReportsFile);
+            console.log('test File content:\n', testReportsFile);
 
             const now = new Date().toLocaleString('zh', { timeZone: 'Asia/Taipei' });
             const commentContent = `Created from Github Actions 👋  ${now} \n \`\`\`\n${lintReportsFile}\`\`\` \n \`\`\`\n${testReportsFile}\`\`\` `

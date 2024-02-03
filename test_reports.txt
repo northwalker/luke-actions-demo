@@ -1,5 +1,15 @@
- Test Files  1 failed | 1 passed (2)
-      Tests  1 failed | 9 passed (10)
-   Start at  16:20:51
-   Duration  388ms (transform 25ms, setup 0ms, collect 88ms, tests 23ms, environment 305ms, prepare 69ms)
+----------------------------|---------|----------|---------|---------|-------------------
+File                        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------------------------|---------|----------|---------|---------|-------------------
+All files                   |     100 |      100 |     100 |     100 |                   
+ src                        |     100 |      100 |     100 |     100 |                   
+  App.jsx                   |     100 |      100 |     100 |     100 |                   
+ src/js                     |     100 |      100 |     100 |     100 |                   
+  formatNumberWithCommas.js |     100 |      100 |     100 |     100 |                   
+----------------------------|---------|----------|---------|---------|-------------------
 
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 11 passed, 12 total
+Snapshots:   0 total
+Time:        0.563 s, estimated 1 s
+Ran all test suites.

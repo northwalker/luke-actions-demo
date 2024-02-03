@@ -1,10 +1,10 @@
 name: UnitTest
 
-# on: [pull_request]
+on: [pull_request]
 
-on: 
-    push:
-      branches: ["master"]
+# on: 
+#     push:
+#       branches: ["master"]
 
 jobs:
     UnitTest:
@@ -21,11 +21,10 @@ jobs:
           run: npm install
         - name: Run Test
           id: test_and_report
-          # Grep 4 rows after "Test Files", that's final info
+          # Grep 4 rows after "Test Suites", that's final info
           run:  |
-            npm run test:ci --silent | grep -A 100 "Test Files" | sed -E "s/\x1B\[[0-9;]*[JKmsu]//g" > ./test_reports.txt
-            npmExitCode=${PIPESTATUS[0]}
-            echo "npmExitCode=$npmExitCode" >> "$GITHUB_ENV"
+            npm run test:ci --silent > ./test_reports.txt 2>> ./test_reports.txt
+            echo "failed_number=$failed_number" >> "$GITHUB_ENV"
           continue-on-error: true
         - name: Save Test result
           uses: actions/upload-artifact@v4
@@ -35,9 +34,8 @@ jobs:
             path: ./test_reports.txt          
         - name: Log reports and check outcome
           run: |
-            echo npmExitCode: $npmExitCode
             echo outcome: ${{ steps.test_and_report.outcome }}
-            if [[ "${{ steps.test_and_report.outcome }}" == 'failure'  || $npmExitCode == 1 ]]; then
+            if [[ "${{ steps.test_and_report.outcome }}" == 'failure' ]]; then
               exit 1
             else
               exit 0
