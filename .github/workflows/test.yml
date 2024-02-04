@@ -1,10 +1,10 @@
 name: UnitTest
 
-on: [pull_request]
+# on: [pull_request]
 
-# on: 
-#     push:
-#       branches: ["master"]
+on: 
+    push:
+      branches: ["master"]
 
 jobs:
     UnitTest:

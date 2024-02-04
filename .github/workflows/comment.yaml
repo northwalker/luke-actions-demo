@@ -24,7 +24,7 @@ jobs:
           script: |
             const { data: pullRequest } = await github.rest.pulls.get({
               owner: context.repo.owner,
-              repo: context.  .repo,
+              repo: context.repo.repo,
               pull_number: context.issue.number,
             });
             console.log('pullRequest', pullRequest.body);
