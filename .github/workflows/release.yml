@@ -1,0 +1,61 @@
+name: Release
+
+# on: [push, pull_request]
+# on:  
+#   push:
+#     branches:
+#       - release/**
+on: 
+  push:
+    branches: ["main"]
+
+jobs:
+  Release:
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Release preparation  
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+        run : |
+          git fetch --all
+          git checkout $BRANCH_NAME
+          git log --pretty="%h - %s (%cr) %an" $(git merge-base origin/main HEAD)..HEAD
+          git log --pretty="%h - %s (%cr) %an" $(git merge-base origin/main HEAD)..HEAD > commit_logs.txt
+      - uses: actions/github-script@v7
+        id: update_release_pull_request
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            const regex = /<!-- PR_COMMITS_START -->([\s\S]*?)<!-- PR_COMMITS_END -->/;
+            const fs = require('fs');
+            const commitLogsFile = fs.readFileSync('commit_logs.txt', 'utf8');
+            console.log('commitLogsFile', commitLogsFile)
+            console.log('match', pullRequest.body?.match(regex));
+
+            let newBody = ''
+            if(pullRequest.body?.match(regex)) 
+              newBody= pullRequest.body.replace(regex, `<!-- PR_COMMITS_START -->\n${commitLogsFile}\n<!-- PR_COMMITS_END -->`);
+            else {
+              newBody = pullRequest.body + `\n<!-- PR_COMMITS_START -->\n${commitLogsFile}\n<!-- PR_COMMITS_END -->`
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: newBody,
+            });
+      - name: Release preparation done 
+        run: echo release preparation done 
+      
