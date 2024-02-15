@@ -1,12 +1,11 @@
 name: GitHub Actions
 run-name: GitHub Actions by @${{ github.actor }}
 
-# on: [pull_request]
-
-on:  
+# on: [push, pull_request]
+on: 
+  pull_request:
   push:
-    branches:
-      - master
+    branches: ["main"]
 
 jobs:  
   Initial:

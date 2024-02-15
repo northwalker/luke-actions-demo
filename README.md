@@ -1,3 +1,9 @@
+<!-- PR_BADGES_START -->
+
+![](https://github.com/northwalker/luke-actions-demo/actions/workflows/main.yml/badge.svg?branch=main) ![](https://github.com/northwalker/luke-actions-demo/actions/workflows/eslint.yml/badge.svg?branch=main) ![](https://github.com/northwalker/luke-actions-demo/actions/workflows/test.yml/badge.svg?branch=main) ![](https://github.com/northwalker/luke-actions-demo/actions/workflows/build.yml/badge.svg?branch=main)
+
+<!-- PR_BADGES_END -->
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

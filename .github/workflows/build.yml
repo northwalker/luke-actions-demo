@@ -1,14 +1,13 @@
 name: Build and Deploy
 
-# on: [pull_request]
-
+# on: [push, pull_request]
 # on: 
 #   push:
-#     branches: ["feature/github-actions"]
-
+#     branches: ["main"]
 on: 
+  pull_request:
   push:
-    branches: ["master"]
+    branches: ["main"]
 
 permissions:
   contents: read

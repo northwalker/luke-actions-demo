@@ -5,7 +5,7 @@ run-name: ${{ github.event.head_commit.message }} by @${{ github.actor }}
 on:  
   push:
     branches:
-      - master
+      - demo
 
 jobs:
   CI:

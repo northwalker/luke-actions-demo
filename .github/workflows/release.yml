@@ -1,11 +1,13 @@
 name: Release
 
-on: [pull_request]
-
+# on: [push, pull_request]
 # on:  
 #   push:
 #     branches:
-#       - feature/**
+#       - release/**
+on: 
+  push:
+    branches: ["main"]
 
 jobs:
   Release:

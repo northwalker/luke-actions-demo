@@ -11,9 +11,6 @@
 
 ---
 
-### What is the purpose of this pull request? <!-- (put an "X" next to an item) -->
+### What is the purpose of this pull request?
 
-- [ ] Bug fix
-- [ ] New Feature
-- [ ] Documentation update
-- [ ] Other
+<!-- e.g. Bug fix, New Feature, Documentation update, Others -->

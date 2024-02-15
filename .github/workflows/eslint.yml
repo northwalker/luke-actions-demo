@@ -1,11 +1,10 @@
 name: ESLint
 
-# on: [pull_request]
-
+# on: [push, pull_request]
 on: 
+  pull_request:
   push:
-    branches:
-      - master
+    branches: ["main"]
       
 jobs:
     ESLint:

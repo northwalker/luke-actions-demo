@@ -1,12 +1,11 @@
 name: Explore GitHub Actions
 run-name: Explore GitHub Actions
 
-# on: push
-
+# on: [push, pull_request]
 on:
   push:
     branches:
-      - master
+      - demo
 
 jobs:
   Explore-GitHub-Actions:

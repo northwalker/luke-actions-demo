@@ -1,19 +1,17 @@
 name: Labeler
 
 # on: [pull_request]
-
-on:  
-  push:
-    branches:
-      - master
-
+# on:  
+#   push:
+#     branches:
+#       - main
 # on:
 #   issues:
 #     types:
 #       - labeled
-# on:
-#   issues:
-#     types: [opened, edited, deleted]
+on:
+  issues:
+    types: [opened, edited, deleted]
 
 jobs:
   add-label:
