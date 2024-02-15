@@ -1,4 +1,4 @@
-name: GitHub Actions
+name: GitHub Actions Main
 run-name: GitHub Actions by @${{ github.actor }}
 
 # on: [push, pull_request]
@@ -14,6 +14,10 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - name: View context attributes
+        uses: actions/github-script@v7
+        with:
+          script: console.log(context)
       - uses: actions/github-script@v7
         id: update_label
         env:
@@ -31,12 +35,14 @@ jobs:
             if (isHotfix) labels.push('hotfix');
             if (isRelease) labels.push('release');
 
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels
-            })
+            if (context.issue?.number) { 
+              github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels
+              })
+            }
             return  process.env?.BRANCH_NAME
           result-encoding: string
       - name: Result from github-script
@@ -194,6 +200,10 @@ jobs:
 
             const now = new Date().toLocaleString('zh', { timeZone: 'Asia/Taipei' });
             const commentContent = `Created from Github Actions 👋  ${now} \n \`\`\`\n${lintReportsFile}\`\`\` \n \`\`\`\n${testReportsFile}\`\`\` `
+
+            if (!context.issue?.number) {
+              return;
+            }
 
             const { data: list_comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,

@@ -7,7 +7,7 @@ name: Release
 #       - release/**
 on: 
   push:
-    branches: ["main"]
+    branches: ["master"]
 
 jobs:
   Release:
@@ -31,6 +31,9 @@ jobs:
         id: update_release_pull_request
         with:
           script: |
+            if (!context.issue?.number) {
+              return;
+            }
             const { data: pullRequest } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
