@@ -4,7 +4,7 @@ name: Comment Pull Request
 on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
   update_pull_request:
@@ -25,14 +25,14 @@ jobs:
             if (!context.issue?.number) {
               return '--';
             }
-      
+
             const { data: pullRequest } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
             console.log('pullRequest', pullRequest.body);
-            
+
             const regex = /<!-- PR_BADGES_START -->([\s\S]*?)<!-- PR_BADGES_END -->/;
             const { headRef } =  process.env;
             const query = headRef ? `?branch=${process.env.headRef}` : '';
@@ -78,24 +78,28 @@ jobs:
             });
 
             // comment.user.login === 'github-actions[bot]'
-            const bot_comment = list_comments.find(c => c.user.type === 'Bot' && c.user.id == 41898282 );
+            const bot_comment = list_comments.find(c => c.user.type === 'Bot' && c.user?.id == 41898282 );
             const now = new Date().toLocaleString('zh', { timeZone: 'Asia/Taipei' });
 
-            // const data = await github.rest.issues.updateComment({
-            //   owner: context.repo.owner,
-            //   repo: context.repo.repo,
-            //   comment_id: bot_comment.id,
-            //   body: `Updated from Github Actions. \n ${now}`,
-            // });
-            // console.log('updateComment data', data);
-            
-            github.rest.issues.deleteComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: bot_comment.id,
-            });
-            console.log('Delete comment id', bot_comment.id);
-            
+            if (bot_comment?.id) {
+              
+              //   const data = await github.rest.issues.updateComment({
+              //     owner: context.repo.owner,
+              //     repo: context.repo.repo,
+              //     comment_id: bot_comment.id,
+              //     body: `Updated from Github Actions. \n ${now}`,
+              //   });
+              //   console.log('updateComment data', data);
+
+              github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: bot_comment.id,
+              });
+
+              console.log('Delete comment id', bot_comment.id);
+            }
+
             const { data } = await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -108,4 +112,3 @@ jobs:
           result-encoding: string
       - name: Log pull request comment id
         run: echo 'New created comment id ${{steps.update_pull_request_comment.outputs.result}}'
-        

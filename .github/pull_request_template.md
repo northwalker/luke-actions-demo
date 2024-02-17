@@ -1,5 +1,5 @@
 <!-- PR_BADGES_START -->
-<!-- PR_BADGES_NED -->
+<!-- PR_BADGES_END -->
 
 ### Description
 
