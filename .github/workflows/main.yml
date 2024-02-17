@@ -2,12 +2,12 @@ name: GitHub Actions Main
 run-name: GitHub Actions by @${{ github.actor }}
 
 # on: [push, pull_request]
-on: 
+on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ['main']
 
-jobs:  
+jobs:
   Initial:
     permissions:
       contents: read
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/github-script@v7
         id: update_label
         env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           script: |
             const isFeature = process.env?.BRANCH_NAME.toLowerCase().startsWith('feature') || process.env?.BRANCH_NAME.toLowerCase().startsWith('feat');
@@ -46,47 +46,47 @@ jobs:
             return  process.env?.BRANCH_NAME
           result-encoding: string
       - name: Result from github-script
-        run: echo 'Pull Request id ${{steps.update_label.outputs.result}}' 
+        run: echo 'Pull Request id ${{steps.update_label.outputs.result}}'
   ESLint:
     needs: Initial
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "20"
-            cache: "npm"
-        - name: Install dependenies
-          run: npm install
-        - name: Run ESLint
-          id: lint_and_report
-          continue-on-error: true
-          run: npm run lint:ci --silent > ./lint_reports.txt
-        - name: Log reports and check outcome
-          id: build_lint_reports
-          run: |  
-            echo outcome: ${{ steps.lint_and_report.outcome }}
-            if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
-              echo '✅ Lint All Passed' > ./lint_reports.txt
-            else
-              echo '😡😡😡😡😡 Lint Error...' >> ./lint_reports.txt
-            fi
-        - name: Save ESLint result
-          uses: actions/upload-artifact@v4
-          id: artifact-upload-step
-          with:
-            name: lint_reports
-            path: ./lint_reports.txt
-        - name: Log reports and check outcome
-          run: |  
-            echo outcome: ${{ steps.lint_and_report.outcome }}
-            if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
-              exit 0
-            else
-              exit 1
-            fi        
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependenies
+        run: npm install
+      - name: Run ESLint
+        id: lint_and_report
+        continue-on-error: true
+        run: npm run lint:ci --silent > ./lint_reports.txt
+      - name: Log reports and check outcome
+        id: build_lint_reports
+        run: |
+          echo outcome: ${{ steps.lint_and_report.outcome }}
+          if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+            echo '✅ Lint All Passed' > ./lint_reports.txt
+          else
+            echo '😡😡😡😡😡 Lint Error...' >> ./lint_reports.txt
+          fi
+      - name: Save ESLint result
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: lint_reports
+          path: ./lint_reports.txt
+      - name: Log reports and check outcome
+        run: |
+          echo outcome: ${{ steps.lint_and_report.outcome }}
+          if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+            exit 0
+          else
+            exit 1
+          fi
   UnitTest:
     needs: Initial
     runs-on: ubuntu-latest
@@ -96,8 +96,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - name: Install dependenies
         run: npm install
       - name: Run Test
@@ -111,7 +111,7 @@ jobs:
         id: artifact-upload-step
         with:
           name: test_reports
-          path: ./test_reports.txt          
+          path: ./test_reports.txt
       - name: Log reports and check outcome
         run: |
           echo outcome: ${{ steps.test_and_report.outcome }}
@@ -127,15 +127,15 @@ jobs:
       artifactId: ${{ steps.artifact-upload-step.outputs.artifact-id }}
       artifactUrl: ${{ steps.artifact-upload-step.outputs.artifact-url }}
     steps:
-      - name: Hello 
+      - name: Hello
         run: echo "Hello ${{ github.repository }} repository"
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - name: Install dependenies
         run: npm install
       - name: Build Artifacts
@@ -146,7 +146,7 @@ jobs:
           name: dist
           path: dist/
       - name: Set summary
-        run:  echo "GitHub Actions workflows has done. 🚀" >> $GITHUB_STEP_SUMMARY 
+        run: echo "GitHub Actions workflows has done. 🚀" >> $GITHUB_STEP_SUMMARY
   Deploy:
     needs: Build
     runs-on: ubuntu-latest
@@ -154,11 +154,11 @@ jobs:
     env:
       artifactId: ${{needs.build.outputs.artifactId}}
       artifactUrl: ${{needs.build.outputs.artifactUrl}}
-    steps: 
-      - name: Log Artifact ID  
+    steps:
+      - name: Log Artifact ID
         run: echo "Artifact ID from previous job is $artifactId" >> $GITHUB_STEP_SUMMARY
       - name: Log Artifact URL
-        run: echo "Artifact URL from previous job is $artifactUrl" >> $GITHUB_STEP_SUMMARY 
+        run: echo "Artifact URL from previous job is $artifactUrl" >> $GITHUB_STEP_SUMMARY
       - name: Deploy
         run: echo "Run some scripts to deploy artifact"
   report:
@@ -175,7 +175,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         name: Download All Artifacts
-        with: 
+        with:
           path: download
       # - name: List download files
       #   id: download-reports
@@ -214,21 +214,23 @@ jobs:
             // comment.user.login === 'github-actions[bot]'
             const bot_comment = list_comments.find(c => c.user.type === 'Bot' && c.user.id == 41898282 );
 
-            // const data = await github.rest.issues.updateComment({
-            //   owner: context.repo.owner,
-            //   repo: context.repo.repo,
-            //   comment_id: bot_comment.id,
-            //   body: commentContent
-            // });
-            // console.log('updateComment data', data);
-            
-            github.rest.issues.deleteComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: bot_comment.id
-            });
-            console.log('Delete comment id', bot_comment.id);
-            
+            if (bot_comment?.id) {
+              // const data = await github.rest.issues.updateComment({
+              //   owner: context.repo.owner,
+              //   repo: context.repo.repo,
+              //   comment_id: bot_comment.id,
+              //   body: commentContent
+              // });
+              // console.log('updateComment data', data);
+              
+              github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: bot_comment.id
+              });
+              console.log('Delete comment id', bot_comment.id);
+            }
+
             const { data } = await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -241,4 +243,3 @@ jobs:
           result-encoding: string
       - name: Log pull request comment id
         run: echo 'New created comment id ${{steps.update_pull_request_comment.outputs.result}}'
-              

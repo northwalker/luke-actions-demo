@@ -81,17 +81,16 @@ jobs:
             const bot_comment = list_comments.find(c => c.user.type === 'Bot' && c.user?.id == 41898282 );
             const now = new Date().toLocaleString('zh', { timeZone: 'Asia/Taipei' });
 
-            // if (bot_comment?.id) {
-            //   const data = await github.rest.issues.updateComment({
-            //     owner: context.repo.owner,
-            //     repo: context.repo.repo,
-            //     comment_id: bot_comment.id,
-            //     body: `Updated from Github Actions. \n ${now}`,
-            //   });
-            //   console.log('updateComment data', data);
-            // }
-
             if (bot_comment?.id) {
+              
+              //   const data = await github.rest.issues.updateComment({
+              //     owner: context.repo.owner,
+              //     repo: context.repo.repo,
+              //     comment_id: bot_comment.id,
+              //     body: `Updated from Github Actions. \n ${now}`,
+              //   });
+              //   console.log('updateComment data', data);
+
               github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
