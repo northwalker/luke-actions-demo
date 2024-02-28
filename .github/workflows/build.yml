@@ -18,13 +18,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: ECHO env
-        env:
-          RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Environment (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
         run: |
-          echo "Github Ref ${GITHUB_REF}"
-          echo "Github SHA ${GITHUB_SHA}"
-          echo "Relevant commit SHA: $RELEVANT_SHA"
+          echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}
+      - name: Setup Environment (Push)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node.js
@@ -35,7 +38,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build dist
-        run: VITE_SHORT_SHA=${GITHUB_SHA::7} npm run build
+        run: VITE_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
