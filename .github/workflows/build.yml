@@ -38,7 +38,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build dist
-        run: VITE_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
+        run: VITE_APP_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
