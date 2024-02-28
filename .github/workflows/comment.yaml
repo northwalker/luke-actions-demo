@@ -8,6 +8,7 @@ on:
 
 jobs:
   update_pull_request:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -49,6 +50,7 @@ jobs:
       - name: Result from github-script
         run: echo 'Pull Request id ${{steps.update_pull_request.outputs.result}}'
   update_comment:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

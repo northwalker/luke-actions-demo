@@ -28,8 +28,13 @@ jobs:
         shell: bash
         run: |
           echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
+      - name: Log last commit sha
+        run: echo "LAST_COMMIT_SHA ${LAST_COMMIT_SHA}"
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,7 +43,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build dist
-        run: VITE_APP_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
+        run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
