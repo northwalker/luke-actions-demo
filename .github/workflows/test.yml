@@ -24,7 +24,6 @@ jobs:
         # Grep 4 rows after "Test Suites", that's final info
         run: |
           npm run test:ci --silent > ./test_reports.txt 2>> ./test_reports.txt
-          echo "failed_number=$failed_number" >> "$GITHUB_ENV"
         continue-on-error: true
       - name: Save Test result
         uses: actions/upload-artifact@v4
