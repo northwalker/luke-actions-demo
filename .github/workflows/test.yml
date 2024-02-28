@@ -1,42 +1,42 @@
 name: UnitTest
 
 # on: [push, pull_request]
-on: 
+on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
-    UnitTest:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "20"
-            cache: "npm"
-        - name: Install dependenies
-          run: npm install
-        - name: Run Test
-          id: test_and_report
-          # Grep 4 rows after "Test Suites", that's final info
-          run:  |
-            npm run test:ci --silent > ./test_reports.txt 2>> ./test_reports.txt
-            echo "failed_number=$failed_number" >> "$GITHUB_ENV"
-          continue-on-error: true
-        - name: Save Test result
-          uses: actions/upload-artifact@v4
-          id: artifact-upload-step
-          with:
-            name: test_reports
-            path: ./test_reports.txt          
-        - name: Log reports and check outcome
-          run: |
-            echo outcome: ${{ steps.test_and_report.outcome }}
-            if [[ "${{ steps.test_and_report.outcome }}" == 'failure' ]]; then
-              exit 1
-            else
-              exit 0
-            fi
+  UnitTest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependenies
+        run: npm install
+      - name: Run Test
+        id: test_and_report
+        # Grep 4 rows after "Test Suites", that's final info
+        run: |
+          npm run test:ci --silent > ./test_reports.txt 2>> ./test_reports.txt
+          echo "failed_number=$failed_number" >> "$GITHUB_ENV"
+        continue-on-error: true
+      - name: Save Test result
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: test_reports
+          path: ./test_reports.txt
+      - name: Log reports and check outcome
+        run: |
+          echo outcome: ${{ steps.test_and_report.outcome }}
+          if [[ "${{ steps.test_and_report.outcome }}" == 'failure' ]]; then
+            exit 1
+          else
+            exit 0
+          fi

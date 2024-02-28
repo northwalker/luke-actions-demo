@@ -139,7 +139,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build Artifacts
-        run: npm run build
+        run: VITE_SHORT_SHA=${GITHUB_SHA::7} npm run build
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
