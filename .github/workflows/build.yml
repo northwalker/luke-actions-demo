@@ -23,11 +23,13 @@ jobs:
         shell: bash
         run: |
           echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}
+          echo "LAST_COMMIT_SHA ${LAST_COMMIT_SHA}"
       - name: Setup Environment (Push)
         if: ${{ github.event_name == 'push' }}
         shell: bash
         run: |
           echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
+          echo "LAST_COMMIT_SHA ${LAST_COMMIT_SHA}"
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node.js
@@ -38,7 +40,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build dist
-        run: VITE_APP_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
+        run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
