@@ -1,49 +1,48 @@
 name: ESLint
 
 # on: [push, pull_request]
-on: 
+on:
   pull_request:
   push:
-    branches: ["main"]
-      
+    branches: ['main']
+
 jobs:
-    ESLint:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v4
-          - name: Set up Node.js
-            uses: actions/setup-node@v4
-            with:
-              node-version: "20"
-              cache: "npm"
-          - name: Install dependenies
-            run: npm install
-          - name: Run ESLint
-            id: lint_and_report
-            continue-on-error: true
-            run: npm run lint:ci --silent > ./lint_reports.txt
-          - name: Log reports and check outcome
-            id: build_lint_reports
-            run: |  
-              echo outcome: ${{ steps.lint_and_report.outcome }}
-              if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
-                echo '✅ Lint All Passed' > ./lint_reports.txt
-              else
-                echo '😡😡😡😡😡 Lint Error...' >> ./lint_reports.txt
-              fi
-          - name: Save ESLint result
-            uses: actions/upload-artifact@v4
-            id: artifact-upload-step
-            with:
-              name: lint_reports
-              path: ./lint_reports.txt
-          - name: Log reports and check outcome
-            run: |  
-              echo outcome: ${{ steps.lint_and_report.outcome }}
-              if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
-                exit 0
-              else
-                exit 1
-              fi 
-  
+  ESLint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependenies
+        run: npm install
+      - name: Run ESLint
+        id: lint_and_report
+        continue-on-error: true
+        run: npm run lint:ci --silent > ./lint_reports.txt
+      - name: Log reports and check outcome
+        id: build_lint_reports
+        run: |
+          echo outcome: ${{ steps.lint_and_report.outcome }}
+          if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+            echo '✅ Lint All Passed' > ./lint_reports.txt
+          else
+            echo '😡😡😡😡😡 Lint Error...' >> ./lint_reports.txt
+          fi
+      - name: Save ESLint result
+        uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          name: lint_reports
+          path: ./lint_reports.txt
+      - name: Log reports and check outcome
+        run: |
+          echo outcome: ${{ steps.lint_and_report.outcome }}
+          if [[ "${{ steps.lint_and_report.outcome }}" == 'success' ]]; then
+            exit 0
+          else
+            exit 1
+          fi

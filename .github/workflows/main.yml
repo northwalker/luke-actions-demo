@@ -129,6 +129,16 @@ jobs:
     steps:
       - name: Hello
         run: echo "Hello ${{ github.repository }} repository"
+      - name: Setup Environment (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> ${GITHUB_ENV}
+      - name: Setup Environment (Push)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          echo "LAST_COMMIT_SHA=${GITHUB_SHA}" >> ${GITHUB_ENV}
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node.js
@@ -139,7 +149,7 @@ jobs:
       - name: Install dependenies
         run: npm install
       - name: Build Artifacts
-        run: npm run build
+        run: VITE_APP_SHORT_SHA=${LAST_COMMIT_SHA::7} npm run build
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:

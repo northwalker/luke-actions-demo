@@ -1,13 +1,13 @@
 name: Release
 
 # on: [push, pull_request]
-# on:  
+# on:
 #   push:
 #     branches:
 #       - release/**
-on: 
+on:
   push:
-    branches: ["master"]
+    branches: ['master']
 
 jobs:
   Release:
@@ -19,10 +19,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Release preparation  
+      - name: Release preparation
         env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-        run : |
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
           git fetch --all
           git checkout $BRANCH_NAME
           git log --pretty="%h - %s (%cr) %an" $(git merge-base origin/main HEAD)..HEAD
@@ -39,7 +39,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
-            
+
             const regex = /<!-- PR_COMMITS_START -->([\s\S]*?)<!-- PR_COMMITS_END -->/;
             const fs = require('fs');
             const commitLogsFile = fs.readFileSync('commit_logs.txt', 'utf8');
@@ -59,6 +59,5 @@ jobs:
               pull_number: context.issue.number,
               body: newBody,
             });
-      - name: Release preparation done 
-        run: echo release preparation done 
-      
+      - name: Release preparation done
+        run: echo release preparation done
